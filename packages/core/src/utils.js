@@ -206,6 +206,16 @@ function computeDefaults(
         includeUndefinedValues
       )
     );
+  } else if (isGroupsFixedItem(schema)) {
+    defaults = schema.groups.map((itemSchema, idx) =>
+      computeDefaults(
+        itemSchema,
+        Array.isArray(parentDefaults) ? parentDefaults[idx] : undefined,
+        rootSchema,
+        formData,
+        includeUndefinedValues
+      )
+    );
   } else if ("oneOf" in schema) {
     schema =
       schema.oneOf[getMatchingOption(undefined, schema.oneOf, rootSchema)];
@@ -243,7 +253,10 @@ function computeDefaults(
       if (Array.isArray(defaults)) {
         defaults = defaults.map((item, idx) => {
           return computeDefaults(
-            schema.items[idx] || schema.additionalItems || {},
+            (schema.groups && schema.groups[idx]) ||
+              schema.items[idx] ||
+              schema.additionalItems ||
+              {},
             item,
             rootSchema
           );
@@ -254,7 +267,7 @@ function computeDefaults(
       if (Array.isArray(rawFormData)) {
         defaults = rawFormData.map((item, idx) => {
           return computeDefaults(
-            schema.items,
+            schema.groups || schema.items,
             (defaults || {})[idx],
             rootSchema,
             item
@@ -568,6 +581,14 @@ export function isCustomWidget(uiSchema) {
     // https://react-jsonschema-form.readthedocs.io/en/latest/usage/widgets/#hidden-widgets
     "widget" in getUiOptions(uiSchema) &&
     getUiOptions(uiSchema)["widget"] !== "hidden"
+  );
+}
+
+export function isGroupsFixedItem(schema) {
+  return (
+    Array.isArray(schema.groups) &&
+    schema.groups.length > 0 &&
+    schema.groups.every(group => isObject(group) && group.items)
   );
 }
 
@@ -1091,6 +1112,16 @@ export function toIdSchema(
   if ("items" in schema && !schema.items.$ref) {
     return toIdSchema(
       schema.items,
+      id,
+      rootSchema,
+      formData,
+      idPrefix,
+      idSeparator
+    );
+  }
+  if ("groups" in schema && !schema.groups.$ref) {
+    return toIdSchema(
+      schema.groups,
       id,
       rootSchema,
       formData,
