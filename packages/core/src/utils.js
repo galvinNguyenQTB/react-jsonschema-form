@@ -594,7 +594,8 @@ export function isGroupsFixedItem(schema) {
 
 export function isGroupsContainItems(schema) {
   return (
-    Array.isArray(schema.groups) && schema.groups.every(group => group.items)
+    Array.isArray(schema.groups) &&
+    schema.groups.every(schema => schema.hasOwnProperty("items"))
   );
 }
 
