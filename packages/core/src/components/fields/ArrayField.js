@@ -14,6 +14,7 @@ import {
   isFilesArray,
   isFixedItems,
   isGroupsFixedItem,
+  isGroupsContainItems,
   allowAdditionalItems,
   isCustomWidget,
   optionsList,
@@ -486,7 +487,10 @@ class ArrayField extends Component {
   render() {
     const { schema, uiSchema, idSchema, registry } = this.props;
     const { rootSchema } = registry;
-    if (!schema.hasOwnProperty("items") && !schema.hasOwnProperty("groups")) {
+    if (
+      !schema.hasOwnProperty("items") &&
+      !(schema.hasOwnProperty("groups") && isGroupsContainItems(schema))
+    ) {
       const { fields } = registry;
       const { UnsupportedField } = fields;
 
@@ -884,7 +888,7 @@ class ArrayField extends Component {
       groupTitles: groupTitles,
       items: this.state.keyedFormData.map((keyedItem, index) => {
         const { key, item } = keyedItem;
-        const itemSchema = itemSchemas[index];
+        const itemSchema = index < itemSchemas.length ? itemSchemas[index] : {};
         const itemIdPrefix = idSchema.$id + idSeparator + index;
         const itemIdSchema = toIdSchema(
           itemSchema,
