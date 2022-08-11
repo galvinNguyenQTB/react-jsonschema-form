@@ -117,8 +117,8 @@ module.exports = {
           {
             "ui:widget": "radio",
             "ui:options": {
-              "inline": true
-            }
+              inline: true,
+            },
           },
         ],
       },
