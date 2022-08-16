@@ -160,6 +160,25 @@ function transformAjvErrors(errors = []) {
   });
 }
 
+const doesObjectHaveNestedKey = (obj, key) => {
+  if (obj === null || obj === undefined) {
+    return false;
+  }
+  for (const k of Object.keys(obj)) {
+    if (k === key) {
+      return true;
+    } else {
+      const val = obj[k];
+      if (typeof val === "object") {
+        if (doesObjectHaveNestedKey(val, key) === true) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+};
+
 const renameKeyObject = (obj, oldKey, newKey) => {
   if (oldKey === newKey) {
     return obj;
@@ -173,6 +192,12 @@ const renameKeyObject = (obj, oldKey, newKey) => {
     }
   });
   return obj;
+};
+
+const validateSchemaWithGroup = (schema, formData) => {
+  let transformSchema = JSON.parse(JSON.stringify(schema));
+  transformSchema = renameKeyObject(transformSchema, "groups", "items");
+  ajv.validate(transformSchema, formData);
 };
 
 /**
@@ -219,10 +244,12 @@ export default function validateFormData(
   }
 
   let validationError = null;
-  let transformSchema = JSON.parse(JSON.stringify(schema));
-  transformSchema = renameKeyObject(transformSchema, "groups", "items");
   try {
-    ajv.validate(transformSchema, formData);
+    if (doesObjectHaveNestedKey(schema, "groups")) {
+      validateSchemaWithGroup(schema, formData);
+    } else {
+      ajv.validate(schema, formData);
+    }
   } catch (err) {
     validationError = err;
   }
