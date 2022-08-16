@@ -160,6 +160,21 @@ function transformAjvErrors(errors = []) {
   });
 }
 
+const renameKeyObject = (obj, oldKey, newKey) => {
+  if (oldKey === newKey) {
+    return obj;
+  }
+  Object.keys(obj).forEach(key => {
+    if (key === oldKey) {
+      obj[newKey] = obj[key];
+      delete obj[key];
+    } else if (obj[key] !== null && typeof obj[key] === "object") {
+      obj[key] = renameKeyObject(obj[key], oldKey, newKey);
+    }
+  });
+  return obj;
+};
+
 /**
  * This function processes the formData with a user `validate` contributed
  * function, which receives the form data and an `errorHandler` object that
@@ -204,8 +219,10 @@ export default function validateFormData(
   }
 
   let validationError = null;
+  let transformSchema = JSON.parse(JSON.stringify(schema));
+  transformSchema = renameKeyObject(transformSchema, "groups", "items");
   try {
-    ajv.validate(schema, formData);
+    ajv.validate(transformSchema, formData);
   } catch (err) {
     validationError = err;
   }
