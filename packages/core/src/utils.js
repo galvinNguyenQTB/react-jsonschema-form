@@ -1178,6 +1178,15 @@ export function toPathSchema(schema, name = "", rootSchema, formData = {}) {
         element
       );
     });
+  } else if (schema.hasOwnProperty("groups") && Array.isArray(formData)) {
+    formData.forEach((element, i) => {
+      pathSchema[i] = toPathSchema(
+        schema.groups,
+        `${name}.${i}`,
+        rootSchema,
+        element
+      );
+    });
   } else if (schema.hasOwnProperty("properties")) {
     for (const property in schema.properties) {
       pathSchema[property] = toPathSchema(

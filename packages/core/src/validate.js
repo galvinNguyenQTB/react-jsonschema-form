@@ -1,5 +1,4 @@
-import toPath from "lodash/toPath";
-import _ from "lodash";
+import { cloneDeep, toPath } from "lodash";
 import Ajv from "ajv";
 let ajv = createAjvInstance();
 import { deepEquals, getDefaultFormState } from "./utils";
@@ -195,10 +194,9 @@ const renameKeyObject = (obj, oldKey, newKey) => {
   return obj;
 };
 
-const validateSchemaWithGroup = (schema, formData) => {
-  let transformSchema = _.cloneDeep(schema);
-  transformSchema = renameKeyObject(transformSchema, "groups", "items");
-  ajv.validate(transformSchema, formData);
+const transformSchemaWithGroup = schema => {
+  let cloneSchema = cloneDeep(schema);
+  return renameKeyObject(cloneSchema, "groups", "items");
 };
 
 /**
@@ -247,7 +245,8 @@ export default function validateFormData(
   let validationError = null;
   try {
     if (doesObjectHaveNestedKey(schema, "groups")) {
-      validateSchemaWithGroup(schema, formData);
+      const transformSchema = transformSchemaWithGroup(schema);
+      ajv.validate(transformSchema, formData);
     } else {
       ajv.validate(schema, formData);
     }
