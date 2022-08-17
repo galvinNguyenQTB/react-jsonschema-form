@@ -248,7 +248,6 @@ export default function validateFormData(
   try {
     if (doesObjectHaveNestedKey(schema, "groups")) {
       validateSchemaWithGroup(schema, formData);
-      _.de;
     } else {
       ajv.validate(schema, formData);
     }
