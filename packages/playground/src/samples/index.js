@@ -63,5 +63,5 @@ export const samples = {
   ErrorSchema: errorSchema,
   Defaults: defaults,
   Groups: groups,
-  Testing: groupsWithIdenty,
+  GroupsWithIdenty: groupsWithIdenty,
 };
