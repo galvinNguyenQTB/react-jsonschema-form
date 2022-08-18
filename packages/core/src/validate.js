@@ -1,7 +1,12 @@
-import { cloneDeep, toPath } from "lodash";
+import toPath from "lodash/toPath";
 import Ajv from "ajv";
 let ajv = createAjvInstance();
-import { deepEquals, getDefaultFormState } from "./utils";
+import {
+  deepEquals,
+  getDefaultFormState,
+  transformGroupSchema,
+  isSchemaHaveTabsGroup,
+} from "./utils";
 
 let formerCustomFormats = null;
 let formerMetaSchema = null;
@@ -160,45 +165,6 @@ function transformAjvErrors(errors = []) {
   });
 }
 
-const doesObjectHaveNestedKey = (obj, key) => {
-  if (obj === null || obj === undefined) {
-    return false;
-  }
-  for (const k of Object.keys(obj)) {
-    if (k === key) {
-      return true;
-    } else {
-      const val = obj[k];
-      if (typeof val === "object") {
-        if (doesObjectHaveNestedKey(val, key) === true) {
-          return true;
-        }
-      }
-    }
-  }
-  return false;
-};
-
-const renameKeyObject = (obj, oldKey, newKey) => {
-  if (oldKey === newKey) {
-    return obj;
-  }
-  Object.keys(obj).forEach(key => {
-    if (key === oldKey) {
-      obj[newKey] = obj[key];
-      delete obj[key];
-    } else if (obj[key] !== null && typeof obj[key] === "object") {
-      obj[key] = renameKeyObject(obj[key], oldKey, newKey);
-    }
-  });
-  return obj;
-};
-
-const transformSchemaWithGroup = schema => {
-  let cloneSchema = cloneDeep(schema);
-  return renameKeyObject(cloneSchema, "groups", "items");
-};
-
 /**
  * This function processes the formData with a user `validate` contributed
  * function, which receives the form data and an `errorHandler` object that
@@ -243,13 +209,11 @@ export default function validateFormData(
   }
 
   let validationError = null;
+  if (isSchemaHaveTabsGroup(schema)) {
+    schema = transformGroupSchema(schema);
+  }
   try {
-    if (doesObjectHaveNestedKey(schema, "groups")) {
-      const transformSchema = transformSchemaWithGroup(schema);
-      ajv.validate(transformSchema, formData);
-    } else {
-      ajv.validate(schema, formData);
-    }
+    ajv.validate(schema, formData);
   } catch (err) {
     validationError = err;
   }

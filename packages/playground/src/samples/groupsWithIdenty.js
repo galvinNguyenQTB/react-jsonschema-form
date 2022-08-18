@@ -140,11 +140,15 @@ module.exports = {
           },
         },
         {
-          items: {
-            "ui:options": {
-              accept: ".pdf",
+          items: [
+            {
+              file: {
+                "ui:options": {
+                  accept: ".pdf",
+                },
+              },
             },
-          },
+          ],
         },
         {
           items: [
