@@ -4,9 +4,18 @@ import { samples } from "./samples";
 import "react-app-polyfill/ie11";
 import Form, { withTheme } from "@rjsf/core";
 import DemoFrame from "./DemoFrame";
+import { ErrorBoundary } from "react-error-boundary";
 
 // deepEquals and shouldRender and isArguments are copied from rjsf-core. TODO: unify these utility functions.
-
+function ErrorFallback({ error, resetErrorBoundary }) {
+  return (
+    <div role="alert">
+      <p>Something went wrong:</p>
+      <pre>{error.message}</pre>
+      <button onClick={resetErrorBoundary}>Try again</button>
+    </div>
+  );
+}
 function isArguments(object) {
   return Object.prototype.toString.call(object) === "[object Arguments]";
 }
@@ -571,6 +580,7 @@ class Playground extends Component {
             </div>
           )}
         </div>
+
         <div className="col-sm-5">
           {this.state.form && (
             <DemoFrame
@@ -597,33 +607,35 @@ class Playground extends Component {
                 border: 0,
               }}
               theme={theme}>
-              <FormComponent
-                {...templateProps}
-                liveValidate={liveSettings.validate}
-                disabled={liveSettings.disable}
-                readonly={liveSettings.readonly}
-                omitExtraData={liveSettings.omitExtraData}
-                liveOmit={liveSettings.liveOmit}
-                schema={schema}
-                uiSchema={uiSchema}
-                formData={formData}
-                onChange={this.onFormDataChange}
-                noHtml5Validate={true}
-                onSubmit={({ formData }, e) => {
-                  console.log("submitted formData", formData);
-                  console.log("submit event", e);
-                }}
-                fields={{ geo: GeoPosition }}
-                validate={validate}
-                onBlur={(id, value) =>
-                  console.log(`Touched ${id} with value ${value}`)
-                }
-                onFocus={(id, value) =>
-                  console.log(`Focused ${id} with value ${value}`)
-                }
-                transformErrors={transformErrors}
-                onError={log("errors")}
-              />
+              <ErrorBoundary FallbackComponent={ErrorFallback}>
+                <FormComponent
+                  {...templateProps}
+                  liveValidate={liveSettings.validate}
+                  disabled={liveSettings.disable}
+                  readonly={liveSettings.readonly}
+                  omitExtraData={liveSettings.omitExtraData}
+                  liveOmit={liveSettings.liveOmit}
+                  schema={schema}
+                  uiSchema={uiSchema}
+                  formData={formData}
+                  onChange={this.onFormDataChange}
+                  noHtml5Validate={true}
+                  onSubmit={({ formData }, e) => {
+                    console.log("submitted formData", formData);
+                    console.log("submit event", e);
+                  }}
+                  fields={{ geo: GeoPosition }}
+                  validate={validate}
+                  onBlur={(id, value) =>
+                    console.log(`Touched ${id} with value ${value}`)
+                  }
+                  onFocus={(id, value) =>
+                    console.log(`Focused ${id} with value ${value}`)
+                  }
+                  transformErrors={transformErrors}
+                  onError={log("errors")}
+                />
+              </ErrorBoundary>
             </DemoFrame>
           )}
         </div>
