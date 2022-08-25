@@ -6,7 +6,7 @@ module.exports = {
       TeamDetails: {
         type: "array",
         title: "Member Info",
-        groups: [
+        group: [
           {
             type: "array",
             title: "Team Color",
@@ -112,7 +112,7 @@ module.exports = {
   },
   uiSchema: {
     TeamDetails: {
-      groups: [
+      group: [
         {
           items: {
             "ui:widget": "color",

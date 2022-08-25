@@ -13,8 +13,8 @@ import {
   isMultiSelect,
   isFilesArray,
   isFixedItems,
-  isGroupsFixedItem,
-  isGroupsContainItems,
+  isGroupFixedItem,
+  isGroupContainItems,
   allowAdditionalItems,
   isCustomWidget,
   optionsList,
@@ -181,7 +181,7 @@ function DefaultNormalArrayFieldTemplate(props) {
   );
 }
 
-function DefaultFixedGroupsFieldTemplate(props) {
+function DefaultFixedGroupFieldTemplate(props) {
   const [activeTab, setActiveTab] = useState(0);
   const tabs = props.groupTitles.map((p, idx) => {
     return (
@@ -489,7 +489,7 @@ class ArrayField extends Component {
     const { rootSchema } = registry;
     if (
       !schema.hasOwnProperty("items") &&
-      !(schema.hasOwnProperty("groups") && isGroupsContainItems(schema))
+      !(schema.hasOwnProperty("group") && isGroupContainItems(schema))
     ) {
       const { fields } = registry;
       const { UnsupportedField } = fields;
@@ -515,8 +515,8 @@ class ArrayField extends Component {
     if (isFilesArray(schema, uiSchema, rootSchema)) {
       return this.renderFiles();
     }
-    if (isGroupsFixedItem(schema)) {
-      return this.renderGroupsFixedItem();
+    if (isGroupFixedItem(schema)) {
+      return this.renderGroupFixedItem();
     }
     return this.renderNormalArray();
   }
@@ -844,7 +844,7 @@ class ArrayField extends Component {
     return <Template {...arrayProps} />;
   }
 
-  renderGroupsFixedItem() {
+  renderGroupFixedItem() {
     const {
       schema,
       uiSchema,
@@ -869,7 +869,7 @@ class ArrayField extends Component {
     const { TitleField } = fields;
     const groupTitles = [];
 
-    const itemSchemas = schema.groups.map(({ title, ...arrayItems }, index) => {
+    const itemSchemas = schema.group.map(({ title, ...arrayItems }, index) => {
       groupTitles.push(title);
       return retrieveSchema(arrayItems, rootSchema, formData[index]);
     });
@@ -898,9 +898,9 @@ class ArrayField extends Component {
           idPrefix,
           idSeparator
         );
-        const itemUiSchema = Array.isArray(uiSchema.groups)
-          ? uiSchema.groups[index]
-          : uiSchema.groups || {};
+        const itemUiSchema = Array.isArray(uiSchema.group)
+          ? uiSchema.group[index]
+          : uiSchema.group || {};
         const itemErrorSchema = errorSchema ? errorSchema[index] : undefined;
 
         return this.renderArrayFieldItem({
@@ -935,7 +935,7 @@ class ArrayField extends Component {
     const Template =
       uiSchema["ui:ArrayFieldTemplate"] ||
       ArrayFieldTemplate ||
-      DefaultFixedGroupsFieldTemplate;
+      DefaultFixedGroupFieldTemplate;
     return <Template {...arrayProps} />;
   }
 

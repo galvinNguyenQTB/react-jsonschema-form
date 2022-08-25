@@ -206,8 +206,8 @@ function computeDefaults(
         includeUndefinedValues
       )
     );
-  } else if (isGroupsFixedItem(schema)) {
-    defaults = schema.groups.map((itemSchema, idx) =>
+  } else if (isGroupFixedItem(schema)) {
+    defaults = schema.group.map((itemSchema, idx) =>
       computeDefaults(
         itemSchema,
         Array.isArray(parentDefaults) ? parentDefaults[idx] : undefined,
@@ -253,7 +253,7 @@ function computeDefaults(
       if (Array.isArray(defaults)) {
         defaults = defaults.map((item, idx) => {
           return computeDefaults(
-            (schema.groups && schema.groups[idx]) ||
+            (schema.group && schema.group[idx]) ||
               schema.items[idx] ||
               schema.additionalItems ||
               {},
@@ -267,7 +267,7 @@ function computeDefaults(
       if (Array.isArray(rawFormData)) {
         defaults = rawFormData.map((item, idx) => {
           return computeDefaults(
-            schema.groups || schema.items,
+            schema.group || schema.items,
             (defaults || {})[idx],
             rootSchema,
             item
@@ -584,18 +584,18 @@ export function isCustomWidget(uiSchema) {
   );
 }
 
-export function isGroupsFixedItem(schema) {
+export function isGroupFixedItem(schema) {
   return (
-    Array.isArray(schema.groups) &&
-    schema.groups.length > 0 &&
-    schema.groups.every(group => isObject(group) && group.items)
+    Array.isArray(schema.group) &&
+    schema.group.length > 0 &&
+    schema.group.every(item => isObject(item))
   );
 }
 
-export function isGroupsContainItems(schema) {
+export function isGroupContainItems(schema) {
   return (
-    Array.isArray(schema.groups) &&
-    schema.groups.every(schema => schema.hasOwnProperty("items"))
+    Array.isArray(schema.group) &&
+    schema.group.every(schema => schema.hasOwnProperty("items"))
   );
 }
 
@@ -1126,9 +1126,9 @@ export function toIdSchema(
       idSeparator
     );
   }
-  if ("groups" in schema && !schema.groups.$ref) {
+  if ("group" in schema && !schema.group.$ref) {
     return toIdSchema(
-      schema.groups,
+      schema.group,
       id,
       rootSchema,
       formData,
@@ -1178,10 +1178,10 @@ export function toPathSchema(schema, name = "", rootSchema, formData = {}) {
         element
       );
     });
-  } else if (schema.hasOwnProperty("groups") && Array.isArray(formData)) {
+  } else if (schema.hasOwnProperty("group") && Array.isArray(formData)) {
     formData.forEach((element, i) => {
       pathSchema[i] = toPathSchema(
-        schema.groups,
+        schema.group,
         `${name}.${i}`,
         rootSchema,
         element
@@ -1450,11 +1450,11 @@ export function renameKeyObject(obj, oldKey, newKey) {
 
 //Check schema contains tabs group
 export function isSchemaHaveTabsGroup(schema) {
-  return doesObjectHaveNestedKey(schema, "groups");
+  return doesObjectHaveNestedKey(schema, "group");
 }
 
 //Transform group to use default validate
 export function transformGroupSchema(originSchema) {
   let schema = cloneDeep(originSchema);
-  return renameKeyObject(schema, "groups", "items");
+  return renameKeyObject(schema, "group", "items");
 }
